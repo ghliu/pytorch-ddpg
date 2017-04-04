@@ -42,7 +42,7 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
         # [optional] evaluate
         if evaluate is not None and validate_steps > 0 and step % validate_steps == 0:
             policy = lambda x: agent.select_action(x, decay_epsilon=False)
-            validate_reward = evaluate(env, policy, debug=debug, visualize=False)
+            validate_reward = evaluate(env, policy, debug=False, visualize=False)
             if debug: prYellow('[Evaluate] Step_{:07d}: mean_reward:{}'.format(step, validate_reward))
 
         # [optional] save intermideate model
@@ -90,7 +90,8 @@ if __name__ == "__main__":
     parser.add_argument('--ou_theta', default=0.15, type=float, help='noise theta')
     parser.add_argument('--ou_sigma', default=0.2, type=float, help='noise sigma') 
     parser.add_argument('--ou_mu', default=0.0, type=float, help='noise mu') 
-    parser.add_argument('--validate_episodes', default=200, type=int, help='')
+
+    parser.add_argument('--validate_episodes', default=20, type=int, help='')
     parser.add_argument('--max_episode_length', default=500, type=int, help='')
     parser.add_argument('--validate_steps', default=1000, type=int, help='')
     parser.add_argument('--output', default='output', type=str, help='')

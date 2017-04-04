@@ -97,13 +97,13 @@ class DDPG(object):
             soft_update(self.critic_target, self.critic, self.tau)
         )
 
-    def eval():
+    def eval(self):
         self.actor.eval()
         self.actor_target.eval()
         self.critic.eval()
         self.critic_target.eval()
 
-    def cuda():
+    def cuda(self):
         self.actor.cuda()
         self.actor_target.cuda()
         self.critic.cuda()
