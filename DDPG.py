@@ -12,7 +12,7 @@ from util import *
 
 from model import (Actor, Critic)
 from memory import SequentialMemory
-from OU import OrnsteinUhlenbeckProcess
+from random_process import OrnsteinUhlenbeckProcess
 
 from ipdb import set_trace as debug
 
@@ -162,24 +162,24 @@ class DDPG(object):
         )
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    nb_states = 10+19+3*64*64
-    nb_actions = 3
-    is_training = 1
+#     nb_states = 10+19+3*64*64
+#     nb_actions = 3
+#     is_training = 1
 
-    agent = DDPG(nb_states, nb_actions, is_training)
+#     agent = DDPG(nb_states, nb_actions, is_training)
 
-    rand_state = np.random.rand(nb_states)
-    agent.act(rand_state)
-    agent.observe(1.0, rand_state, False)
+#     rand_state = np.random.rand(nb_states)
+#     agent.act(rand_state)
+#     agent.observe(1.0, rand_state, False)
 
-    print(agent.is_training)
-    debug()
+#     print(agent.is_training)
+#     debug()
 
 
-    if is_training == 0:
-       agent.eval()
+#     if is_training == 0:
+#        agent.eval()
 
-    if USE_CUDA: 
-        agent.cuda()
+#     if USE_CUDA: 
+#         agent.cuda()

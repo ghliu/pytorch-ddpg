@@ -38,7 +38,6 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
         agent.observe(reward, observation2, done)
         if step > args.warmup :  #and step % args.train_freq == 0
             agent.update_policy()
-        prGreen('steps {}: action:{}'.format(step, action))
         
         # [optional] evaluate
         if evaluate is not None and validate_steps > 0 and step % validate_steps == 0:
