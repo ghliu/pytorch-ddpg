@@ -3,9 +3,10 @@ import gym
 import numpy as np
 from copy import deepcopy
 
+from ipdb import set_trace as debug
+
 def make_normalized_env(env):
     """ crate a new environment class with actions normalized to [-1,1] 
-    clip rewards to [-1,1]
     """
     act_space = env.action_space
     obs_space = env.observation_space
@@ -34,7 +35,8 @@ def make_normalized_env(env):
             assertEqual(self._process_action(self.action_space.high), act_space.high)
 
         def _process_reward(self, reward):
-            return np.clip(reward, -1., 1.)
+            return reward
+            # return np.clip(reward, -1., 1.)
 
         def _process_action(self, action):
             return self.act_k * action + self.act_b
@@ -45,6 +47,7 @@ def make_normalized_env(env):
 
         def step(self, action):
             action = self._process_action(action)
+            assert act_space.low <= action[0] <= act_space.high
             observation2, r, done, info = env_type.step(self, action)
             reward = self._process_reward(r)
 
@@ -53,6 +56,10 @@ def make_normalized_env(env):
         def render(self, **kwargs):
             env_type.render(self, **kwargs)
 
+        def seed(self, s):
+            env_type.seed(self, s)
+
     nenv = NormalizedEnv()
 
+    # debug()
     return nenv

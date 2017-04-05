@@ -3,6 +3,7 @@
 import numpy as np
 import argparse
 from copy import deepcopy
+import torch
 import gym
 gym.undo_logger_setup()
 
@@ -36,7 +37,7 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
 
         # agent observe and update policy
         agent.observe(reward, observation2, done)
-        if step > args.warmup :  #and step % args.train_freq == 0
+        if step > args.warmup :
             agent.update_policy()
         
         # [optional] evaluate
@@ -46,7 +47,7 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
             if debug: prYellow('[Evaluate] Step_{:07d}: mean_reward:{}'.format(step, validate_reward))
 
         # [optional] save intermideate model
-        if step % (num_iterations/3) == 0:
+        if step % int(num_iterations/3) == 0:
             agent.save_model(output)
 
         # update 
@@ -69,6 +70,17 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
             episode_steps = 0
             episode_reward = 0.
             episode += 1
+
+def test(num_episodes, agent, env, evaluate, model_path, visualize=True, debug=False):
+
+    agent.load_weights(model_path)
+    agent.is_training = False
+    agent.eval()
+    policy = lambda x: agent.select_action(x, decay_epsilon=False)
+
+    for i in range(num_episodes):
+        validate_reward = evaluate(env, policy, debug=debug, visualize=visualize, save=False)
+        if debug: prYellow('[Evaluate] #{}: mean_reward:{}'.format(i, validate_reward))
 
 
 if __name__ == "__main__":
@@ -93,12 +105,14 @@ if __name__ == "__main__":
 
     parser.add_argument('--validate_episodes', default=20, type=int, help='')
     parser.add_argument('--max_episode_length', default=500, type=int, help='')
-    parser.add_argument('--validate_steps', default=1000, type=int, help='')
+    parser.add_argument('--validate_steps', default=2000, type=int, help='how many steps to perform a validate experiment')
     parser.add_argument('--output', default='output', type=str, help='')
     parser.add_argument('--debug', dest='debug', action='store_true')
     parser.add_argument('--init_w', default=0.003, type=float, help='') 
-    parser.add_argument('--train_iter', default=100000, type=int, help='train iters each timestep')
+    parser.add_argument('--train_iter', default=200000, type=int, help='train iters each timestep')
     parser.add_argument('--epsilon', default=50000, type=int, help='')
+    parser.add_argument('--seed', default=-1, type=int, help='')
+    parser.add_argument('--cuda', dest='cuda', action='store_true') # TODO
 
     args = parser.parse_args()
     args.output = get_output_folder(args.output, args.env)
@@ -106,6 +120,11 @@ if __name__ == "__main__":
     env = make_normalized_env(
         gym.make(args.env)
     )
+
+    if args.seed > 0:
+        np.random.seed(args.seed)
+        env.seed(args.seed)
+
     nb_states = env.observation_space.shape[0]
     nb_actions = env.action_space.shape[0]
 
@@ -117,3 +136,9 @@ if __name__ == "__main__":
 
     train(args.train_iter, agent, env, evaluate, 
         args.validate_steps, args.output, max_episode_length=args.max_episode_length, debug=args.debug)
+
+    # test(args.validate_episodes, agent, env, evaluate,
+    #     visualize=True, debug=args.debug)
+    # agent.load_weights('output/MountainCarContinuous-v0-run4')
+    # agent.load_weights('output/Pendulum-v0-run2')
+

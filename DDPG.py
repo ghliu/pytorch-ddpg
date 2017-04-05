@@ -21,6 +21,9 @@ criterion = nn.MSELoss()
 class DDPG(object):
     def __init__(self, nb_states, nb_actions, args):
         
+        if args.seed > 0:
+            self.seed(args.seed)
+
         self.nb_states = nb_states
         self.nb_actions= nb_actions
         
@@ -37,20 +40,27 @@ class DDPG(object):
         self.critic = Critic(self.nb_states, self.nb_actions, **net_cfg)
         self.critic_target = Critic(self.nb_states, self.nb_actions, **net_cfg)
         self.critic_optim  = Adam(self.critic.parameters(), lr=args.rate)
+
+        hard_update(self.actor_target, self.actor)
+        hard_update(self.critic_target, self.critic)
         
         #Create replay buffer
         self.memory = SequentialMemory(limit=args.rmsize, window_length=args.window_length)
         self.random_process = OrnsteinUhlenbeckProcess(size=nb_actions, theta=args.ou_theta, mu=args.ou_mu, sigma=args.ou_sigma)
+
+        # Hyper-parameters
         self.batch_size = args.bsize
         self.tau = args.tau
         self.discount = args.discount
-        
-        self.epsilon = 1.0
         self.depsilon = 1.0 / args.epsilon
+
+        # 
+        self.epsilon = 1.0
         self.s_t = None # Most recent state
         self.a_t = None # Most recent action
-
         self.is_training = True
+
+        # 
         if USE_CUDA: self.cuda()
 
     def update_policy(self):
@@ -90,12 +100,14 @@ class DDPG(object):
         self.actor_optim.step()
 
         # Target update
-        self.actor_target.load_state_dict(
-            soft_update(self.actor_target, self.actor, self.tau)
-        )
-        self.critic_target.load_state_dict(
-            soft_update(self.critic_target, self.critic, self.tau)
-        )
+        soft_update(self.actor_target, self.actor, self.tau)
+        soft_update(self.critic_target, self.critic, self.tau)
+        # self.actor_target.load_state_dict(
+        #     soft_update(self.actor_target, self.actor, self.tau)
+        # )
+        # self.critic_target.load_state_dict(
+        #     soft_update(self.critic_target, self.critic, self.tau)
+        # )
 
     def eval(self):
         self.actor.eval()
@@ -108,10 +120,6 @@ class DDPG(object):
         self.actor_target.cuda()
         self.critic.cuda()
         self.critic_target.cuda()
-
-    @property
-    def buff_size(self):
-        return self.memory.nb_entries
 
     def observe(self, r_t, s_t1, done):
         if self.is_training:
@@ -128,6 +136,7 @@ class DDPG(object):
             self.actor(to_tensor(np.array([s_t])))
         ).squeeze(1)
         action += self.is_training*max(self.epsilon, 0)*self.random_process.sample()
+        action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
             self.epsilon -= self.depsilon
@@ -161,25 +170,30 @@ class DDPG(object):
             '{}/critic.pkl'.format(output)
         )
 
-
-# if __name__ == "__main__":
-
-#     nb_states = 10+19+3*64*64
-#     nb_actions = 3
-#     is_training = 1
-
-#     agent = DDPG(nb_states, nb_actions, is_training)
-
-#     rand_state = np.random.rand(nb_states)
-#     agent.act(rand_state)
-#     agent.observe(1.0, rand_state, False)
-
-#     print(agent.is_training)
-#     debug()
+    def seed(self,s):
+        torch.manual_seed(s)
+        if USE_CUDA:
+            torch.cuda.manual_seed(s)
 
 
-#     if is_training == 0:
-#        agent.eval()
+if __name__ == "__main__":
 
-#     if USE_CUDA: 
-#         agent.cuda()
+    nb_states = 2
+    nb_actions = 1
+    is_training = 1
+
+    agent = DDPG(nb_states, nb_actions, is_training)
+
+    rand_state = np.random.rand(nb_states)
+    agent.act(rand_state)
+    agent.observe(1.0, rand_state, False)
+
+    print(agent.is_training)
+    debug()
+
+
+    if is_training == 0:
+       agent.eval()
+
+    if USE_CUDA: 
+        agent.cuda()

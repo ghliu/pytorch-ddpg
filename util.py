@@ -28,11 +28,14 @@ def to_tensor(ndarray, volatile=False, requires_grad=False, dtype=FLOAT):
     ).type(dtype)
 
 def soft_update(target, source, tau):
-    source_dict = source.state_dict()
-    target_dict = target.state_dict()
-    for key in source_dict.keys():
-        target_dict[key] = tau * source_dict[key] + (1.0 - tau) * target_dict[key]
-    return target_dict
+    for target_param, param in zip(target.parameters(), source.parameters()):
+        target_param.data.copy_(
+            target_param.data * (1.0 - tau) + param.data * tau
+        )
+
+def hard_update(target, source):
+    for target_param, param in zip(target.parameters(), source.parameters()):
+            target_param.data.copy_(param.data)
 
 def get_output_folder(parent_dir, env_name):
     """Return save folder.
