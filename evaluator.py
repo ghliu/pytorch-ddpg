@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import imsave
 from scipy.io import savemat
-from copy import deepcopy
 
 from util import *
 
@@ -25,7 +24,7 @@ class Evaluator(object):
         for episode in range(self.num_episodes):
 
             # reset at the start of episode
-            observation = deepcopy(env.reset())
+            observation = env.reset()
             episode_steps = 0
             episode_reward = 0.
                 
@@ -45,7 +44,6 @@ class Evaluator(object):
                     env.render(mode='human')
 
                 # update
-                observation = deepcopy(observation)
                 episode_reward += reward
                 episode_steps += 1
 

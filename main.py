@@ -7,7 +7,7 @@ import torch
 import gym
 gym.undo_logger_setup()
 
-from normalized_env import make_normalized_env
+from normalized_env import NormalizedEnv
 from evaluator import Evaluator
 from DDPG import DDPG
 from util import *
@@ -21,7 +21,7 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
     while step < num_iterations:
         # reset if it is the start of episode
         if observation is None:
-            observation = env.reset()
+            observation = deepcopy(env.reset())
             agent.reset(observation)
 
         # agent pick action ...
@@ -32,6 +32,7 @@ def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_epis
         
         # env response with next_observation, reward, terminate_info
         observation2, reward, done, info = env.step(action)
+        observation2 = deepcopy(observation2)
         if max_episode_length and episode_steps >= max_episode_length -1:
             done = True
 
@@ -117,9 +118,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.output = get_output_folder(args.output, args.env)
 
-    env = make_normalized_env(
-        gym.make(args.env)
-    )
+    env = NormalizedEnv(gym.make(args.env))
 
     if args.seed > 0:
         np.random.seed(args.seed)
