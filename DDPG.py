@@ -41,7 +41,7 @@ class DDPG(object):
         self.critic_target = Critic(self.nb_states, self.nb_actions, **net_cfg)
         self.critic_optim  = Adam(self.critic.parameters(), lr=args.rate)
 
-        hard_update(self.actor_target, self.actor)
+        hard_update(self.actor_target, self.actor) # Make sure target is with the same weight
         hard_update(self.critic_target, self.critic)
         
         #Create replay buffer
@@ -102,12 +102,6 @@ class DDPG(object):
         # Target update
         soft_update(self.actor_target, self.actor, self.tau)
         soft_update(self.critic_target, self.critic, self.tau)
-        # self.actor_target.load_state_dict(
-        #     soft_update(self.actor_target, self.actor, self.tau)
-        # )
-        # self.critic_target.load_state_dict(
-        #     soft_update(self.critic_target, self.critic, self.tau)
-        # )
 
     def eval(self):
         self.actor.eval()
@@ -174,26 +168,3 @@ class DDPG(object):
         torch.manual_seed(s)
         if USE_CUDA:
             torch.cuda.manual_seed(s)
-
-
-if __name__ == "__main__":
-
-    nb_states = 2
-    nb_actions = 1
-    is_training = 1
-
-    agent = DDPG(nb_states, nb_actions, is_training)
-
-    rand_state = np.random.rand(nb_states)
-    agent.act(rand_state)
-    agent.observe(1.0, rand_state, False)
-
-    print(agent.is_training)
-    debug()
-
-
-    if is_training == 0:
-       agent.eval()
-
-    if USE_CUDA: 
-        agent.cuda()

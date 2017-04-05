@@ -19,6 +19,12 @@ Run
 
     $ ./main.py --debug
 
+Training result for Pendulum-v0
+.. image:: results/Pendulum-v0.png
+    :width: 800px
+    :align: left
+    :height: 600px
+    :alt: alternate text
 
 TODO
 ======
