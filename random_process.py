@@ -1,10 +1,7 @@
-import random
+
 import numpy as np 
 
-# class OU(object):
-
-#     def function(self, x, mu, theta, sigma):
-#         return theta * (mu - x) + sigma * np.random.randn(1)
+# [reference] https://github.com/matthiasplappert/keras-rl/blob/master/rl/random.py
 
 class RandomProcess(object):
     def reset_states(self):

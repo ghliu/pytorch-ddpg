@@ -5,6 +5,7 @@ import random
 
 import numpy as np
 
+# [reference] https://github.com/matthiasplappert/keras-rl/blob/master/rl/memory.py
 
 # This is to be understood as a transition: Given `state0`, performing `action`
 # yields `reward` and results in `state1`, which might be `terminal`.
