@@ -13,7 +13,7 @@ from util import *
 
 gym.undo_logger_setup()
 
-def train(num_iterations, gent, env,  evaluate, validate_steps, output, max_episode_length=None, debug=False):
+def train(num_iterations, agent, env,  evaluate, validate_steps, output, max_episode_length=None, debug=False):
 
     agent.is_training = True
     step = episode = episode_steps = 0
